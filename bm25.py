@@ -4,6 +4,7 @@ from collections import Counter
 from typing import Callable, Optional, Any, List, Dict, Tuple
 import re
 
+# BM25Index class
 class BM25Index:
     def __init__(
         self,
@@ -23,12 +24,36 @@ class BM25Index:
         self.b = b
         self._tokenizer = tokenizer if tokenizer else self._default_tokenizer
 
+    # default tokenizer
     def _default_tokenizer(self, text: str) -> List[str]:
         text = text.lower()
         tokens = re.split(r"\W+", text)
         return [token for token in tokens if token]
+    
+
+    # update the statistics of the corpus
+    def _update_stats_add(self, doc_tokens: List[str]):
+        # update the document length
+        self._doc_len.append(len(doc_tokens))
+
+        # update the document frequency of the tokens
+        seen_in_doc = set()
+
+        for token in doc_tokens:
+            if token not in seen_in_doc:
+                self._doc_freqs[token] = self._doc_freqs.get(token, 0) + 1
+                seen_in_doc.add(token)
+
+        self._index_built = False
 
 
 #store = BM25Index()
 
 #print(store._default_tokenizer("INC-2023-Q4-011"))
+
+store = BM25Index()
+
+store._update_stats_add(["database", "database", "timeout"])
+
+print(store._doc_len)
+print(store._doc_freqs)
