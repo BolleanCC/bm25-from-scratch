@@ -46,14 +46,61 @@ class BM25Index:
 
         self._index_built = False
 
+    # add a document to the index
+    def add_document(self, document: Dict[str, Any]):
+        # check if the document is a dictionary
+        if not isinstance(document, dict):
+            raise TypeError("Document must be a dictionary.")
 
-#store = BM25Index()
+        # check if the document contains a 'content' key
+        if "content" not in document:
+            raise ValueError(
+                "Document dictionary must contain a 'content' key."
+            )
 
-#print(store._default_tokenizer("INC-2023-Q4-011"))
+        # get the content of the document
+        content = document.get("content", "")
 
-store = BM25Index()
+        # check if the content is a string
+        if not isinstance(content, str):
+            raise TypeError("Document 'content' must be a string.")
 
-store._update_stats_add(["database", "database", "timeout"])
+        # tokenize the content
+        doc_tokens = self._tokenizer(content)
 
-print(store._doc_len)
-print(store._doc_freqs)
+        # add the document to the index 
+        self.documents.append(document)
+
+        # add the tokens to the corpus
+        self._corpus_tokens.append(doc_tokens)
+
+        # update the statistics of the corpus
+        self._update_stats_add(doc_tokens)
+
+
+# store = BM25Index()
+
+# print(store._default_tokenizer("INC-2023-Q4-011"))
+
+# store = BM25Index()
+
+# store._update_stats_add(["database", "database", "timeout"])
+
+# print(store._doc_len)
+# print(store._doc_freqs)
+
+
+# store = BM25Index()
+
+# store.add_document({
+#     "content": "database database timeout"
+# })
+
+# store.add_document({
+#     "content": "database error"
+# })
+
+# print(store.documents)
+# print(store._corpus_tokens)
+# print(store._doc_len)
+# print(store._doc_freqs)
