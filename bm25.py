@@ -2,6 +2,7 @@
 import math
 from collections import Counter
 from typing import Callable, Optional, Any, List, Dict, Tuple
+import re
 
 class BM25Index:
     def __init__(
@@ -21,3 +22,13 @@ class BM25Index:
         self.k1 = k1
         self.b = b
         self._tokenizer = tokenizer if tokenizer else self._default_tokenizer
+
+    def _default_tokenizer(self, text: str) -> List[str]:
+        text = text.lower()
+        tokens = re.split(r"\W+", text)
+        return [token for token in tokens if token]
+
+
+#store = BM25Index()
+
+#print(store._default_tokenizer("INC-2023-Q4-011"))
