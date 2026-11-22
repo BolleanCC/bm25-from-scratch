@@ -181,6 +181,12 @@ class BM25Index:
 
         return normalized_results
 
+    def __len__(self) -> int:
+        return len(self.documents)
+
+    def __repr__(self) -> str:
+        return f"BM25VectorStore(count={len(self)}, k1={self.k1}, b={self.b}, index_built={self._index_built})"
+
 
 # store = BM25Index()
 
