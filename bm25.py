@@ -104,6 +104,28 @@ class BM25Index:
         self._calculate_idf()
         self._index_built = True
 
+    def _compute_bm25_score(self, query_tokens:List[str], doc_index: int) -> float:
+        score = 0.0
+
+        doc_term_counts = Counter(self._corpus_tokens[doc_index])
+
+        doc_length = self._doc_len[doc_index]
+
+        for token in query_tokens:
+            if token not in self._idf:
+                continue
+
+            idf = self._idf[token]
+            term_freq = doc_term_counts.get(token, 0)
+
+            numerator = idf * (self.k1 + 1) * term_freq
+
+            denominator = term_freq + self.k1 * (1 - self.b + self.b * doc_length / self._avg_doc_len)
+            score += numerator / (denominator + 1e-9)
+
+        return score
+
+
 # store = BM25Index()
 
 # print(store._default_tokenizer("INC-2023-Q4-011"))
@@ -130,3 +152,27 @@ class BM25Index:
 # print(store._corpus_tokens)
 # print(store._doc_len)
 # print(store._doc_freqs)
+
+
+store = BM25Index()
+
+store.add_document({
+    "content": "database database timeout"
+})
+
+store.add_document({
+    "content": "security incident"
+})
+
+store._build_index()
+
+query_tokens = ["database"]
+
+# score = store._compute_bm25_score(query_tokens, 0)
+
+# print(score)
+
+
+# score = store._compute_bm25_score(query_tokens, 1)
+
+# print(score)
