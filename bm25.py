@@ -77,6 +77,32 @@ class BM25Index:
         # update the statistics of the corpus
         self._update_stats_add(doc_tokens)
 
+     # calculate the idf
+    def _calculate_idf(self):
+        # get the number of documents
+        N = len(self.documents)
+
+        # initialize the idf dictionary
+        self._idf = {}
+
+        for term, freq in self._doc_freqs.items():
+            idf_score = math.log(
+                ((N - freq + 0.5) / (freq + 0.5)) + 1
+            )
+
+            self._idf[term] = idf_score
+
+    # build the index
+    def _build_index(self):
+        if not self.documents:
+            self._avg_doc_len = 0
+            self._idf = {}
+            self._index_built = True
+            return
+        
+        self._avg_doc_len = sum(self._doc_len) / len(self._doc_len)
+        self._calculate_idf()
+        self._index_built = True
 
 # store = BM25Index()
 
