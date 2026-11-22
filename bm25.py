@@ -125,6 +125,62 @@ class BM25Index:
 
         return score
 
+    def search(
+        self,
+        query_text: str,
+        k: int = 1,
+        score_normalization_factor: float = 0.1,
+    ) -> List[Tuple[Dict[str, Any], float]]:
+        if not self.documents:
+            return []
+
+        if not isinstance(query_text, str):
+            raise TypeError("Query text must be a string.")
+
+        if k <= 0:
+            raise ValueError("k must be a positive integer.")
+
+        if not self._index_built:
+            self._build_index()
+
+        if self._avg_doc_len == 0:
+            return []
+
+        query_tokens = self._tokenizer(query_text)
+
+        if not query_tokens:
+            return []
+
+        raw_scores = []
+
+        for i in range(len(self.documents)):
+            raw_score = self._compute_bm25_score(query_tokens, i)
+
+            if raw_score > 1e-9:
+                raw_scores.append((raw_score, self.documents[i]))
+
+        raw_scores.sort(
+            key=lambda item: item[0],
+            reverse=True
+        )
+
+        normalized_results = []
+
+        for raw_score, doc in raw_scores[:k]:
+            normalized_score = math.exp(
+                -score_normalization_factor * raw_score
+            )
+
+            normalized_results.append(
+                (doc, normalized_score)
+            )
+
+        normalized_results.sort(
+            key=lambda item: item[1]
+        )
+
+        return normalized_results
+
 
 # store = BM25Index()
 
@@ -154,19 +210,19 @@ class BM25Index:
 # print(store._doc_freqs)
 
 
-store = BM25Index()
+# store = BM25Index()
 
-store.add_document({
-    "content": "database database timeout"
-})
+# store.add_document({
+#     "content": "database database timeout"
+# })
 
-store.add_document({
-    "content": "security incident"
-})
+# store.add_document({
+#     "content": "security incident"
+# })
 
-store._build_index()
+# store._build_index()
 
-query_tokens = ["database"]
+# query_tokens = ["database"]
 
 # score = store._compute_bm25_score(query_tokens, 0)
 
@@ -176,3 +232,14 @@ query_tokens = ["database"]
 # score = store._compute_bm25_score(query_tokens, 1)
 
 # print(score)
+
+store = BM25Index()
+
+store.add_document({"content": "database timeout error"})
+store.add_document({"content": "database performance"})
+store.add_document({"content": "medical research"})
+
+results = store.search("database", 2)
+
+for doc, distance in results:
+    print(distance, doc["content"])
